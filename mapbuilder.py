@@ -170,5 +170,9 @@ def build_ithaca(filename):
     # build the graph from the filename
     f = open(filename)
     G = read_osm(f)
+    # get list of connected components
+    components = networkx.connected_component_subgraphs(G)
+    # find the largest connected component
+    best_subgraph = max(components, key = lambda x: len(x.nodes()))
     f.close()
-    return G
+    return best_subgraph

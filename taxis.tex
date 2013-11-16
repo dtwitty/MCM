@@ -1,0 +1,581 @@
+\documentclass[titlepage]{article}
+\usepackage{amsmath, enumerate}
+\usepackage{caption}
+\usepackage{graphicx,subcaption}
+\usepackage{array}
+\usepackage[margin=1in]{geometry}
+\usepackage{float}
+\everymath{\displaystyle}
+\begin{document}
+
+\title{Optimizing Vaccination Strategies for H1N1 Outbreaks}
+\author{Aaron Match, Dominick Twitty, Wenhai Yang}
+\maketitle
+
+\begin{abstract}
+Mathematical models can provide decision makers and public health agencies with local and meaningful insights. In this paper, we recommend a vaccination strategy that minimizes deaths among the 60,000 residents of Ithaca, NY from a swine flu (H1N1) epidemic using a limited number of 4000 vaccinations per month. We briefly describe three models that helped us develop this recommendation before delving into the assumptions, parameters, structure, and results of our most robust model: a mechanistic, stochastic, socially-motivated model. We simulated different vaccination strategies that focused on either the highly connected or high mortality subpopulations. From this simulation, we reached consensus across all three models that the optimal vaccination strategy focus on the highly connected subpopulation. Even in the cases of novel or doubly deadly strains, we conclude that all vaccinations should be administered to the highly connected sub-populations.
+\end{abstract}
+\section{The Problem}
+Ithaca, a city of 60,000, receives 4000 flu vaccinations every month. The city has put forth two vaccination strategies:
+\begin{enumerate}
+\item Focus on vaccinating the ``highly connected''. These include school-age children and college students.
+
+\item Focus on vaccinating the``high risk''. These include the more frail and susceptible in the population, who have a lower ability to fight infection on their own.
+\end{enumerate}
+
+We are tasked with determining the optimal way to split the limited number of vaccines among these two groups so as to minimize the number of deaths and/or infections.
+
+
+\section{Model assumptions}
+The robust stochastic model assumes the following about pandemic H1N1 spreading through Ithaca, NY:
+
+\begin{enumerate}
+\item Each person in Ithaca fits into exactly one flu category: high risk (of mortality), high connectivity, or normal (neither high risk nor high connectivity). School-aged people ($<$25 years old) are highly connected, people aged 25-65 are high risk, people older than 65 are normal. Thus, H1N1 death rate and transmission depends only on age.
+
+\item The flu begins with one infected person in each risk sub-population (high connectivity, high risk or normal).
+
+\item  Each person who begins in the pandemic model fits into exactly one of the following categories at any given time: healthy, infected, dead, or recovered/vaccinated.
+
+\item Every infected person has a circle of close contacts who are the only people susceptible to infection from that person. The number of contacts depends only on age, and the groups are interconnected.
+
+\item All 4000 vaccinations are administered on the first day of each month, and they produce full immunity after exactly 14 days. If the flu persists longer than 30 days, then a new round of 4000 vaccinations is applied in the same manner at the beginning of each 30 day cycle.
+
+\item No person enters or exits the system through immigration/emigration, birth or unrelated death.
+
+\item  No preventative or treatment measures are taken except vaccination, e.g. no hospitalizations, quarantine, or school closures.
+
+\item The high risk, high connectivity, and normal populations experience pandemic flu spread independent of each other. This is why each group must be ``seeded'' with one infected individual.
+
+\item The mortality rates do not depend on time or the number of people infected.
+
+
+\item Ithaca College and Cornell University remain in session for the duration of the pandemic.
+\end{enumerate}
+
+
+\section{Paramaterizing the spread of H1N1}
+
+\begin{description}
+\item[Death rates]\hfill \\
+Death rates were derived from the Centers for Disease Control and Prevention (CDC) illness, hospitalization and death data for the 2009 H1N1 pandemic. The sub-populations were categorized by age. For each age group, the death rate was calculated as deaths per case of illness (deaths in each sub-population divided by total illnesses). Contrary to other influenza pandemics, the highest death rate did not afflict the oldest members of the population  (CDC, 2009). This is because a similar strain of the influenza circulated decades ago, partially immunizing the oldest members of the population.
+
+The death rate for highest risk members of the population, those aged 25-65 years old, was parameterized as the value 0.00027 deaths per person per day. The death for the greater lower risk populations ($<$ 25 years old and $>$ 65 years old) was 0.000064 deaths per person per day.
+
+In the case of a novel strain of pandemic H1N1, all members of the population would be equally susceptible, and assumed to have a death rate of 0.00027 deaths per person per day.
+
+In the case of a particularly fatal strain of H1N1 similar to the past strain, each population would maintain its relative death rate, but the values would each be doubled. High risk populations would have a death rate of 0.00054 deaths per person per day. Low risk population would have a death rate of 0.000128 deaths per person per day.
+
+\item[Infect period]\hfill \\
+The infect period was selected as the average duration of the infectious period. The CDC published that virus shedding, the mechanism for flu spread, persists for 5-7 days after initial symptoms begin. We selected a value of 5 days for the mean duration of the infection. In the stochastic model, this is parameterized by a daily probability of recovery, which is calibrated to reach 50\% recovery rate after 5 days. The parameter is 1/7.725 recovery rate per day.
+
+\item[Reproduction Rate]\hfill \\
+Reproduction rate is the average number of people infected by one person during the infect period. It is used in the second stochastic model to parameterize the rate of spread of the disease. If the reproduction rate falls below 1, then the spread of a disease decays to zero infections. For reproduction rate values greater than 1, a disease continues to propagate.
+
+For influenza, reproduction rate differs by age and is often above 1.0 for only a certain, highly connected subset of the population (Ferguson et al, 2006). In the case of pandemic H1N1, the most highly connected populations were school-age populations (including college), which had higher reproduction rates than older populations. Based on Paine's analysis of the spread of H1N1 through New Zealand, the populations younger than 25 years old in the second stochastic model were characterized as highly connected, with reproduction rate 1.5 (2010). Low connectivity populations older than 25 years old were assigned reproduction rate 0.7.
+
+\item[Generation Time]\hfill \\
+Generation time is the expected doubling period for novel H1N1 in an unconstrained population. In the second stochastic model, generation time is combined with reproduction rate to govern the newly infected populations. The generation time used in our model selects the overlapping value of 2.5 between the predicted values for the acute respiratory illness (2.0-3.1 days) and the influenza-like illness (2.4-3.1) (CDC 2009).
+
+\item[Population parameters]\hfill \\
+Ithaca population values were gathered from US Census Data. Ithaca's census population is only 30,000 people (US Census, 2013), while we were tasked with considering a total population of 60,000. The difference between these populations is assumed to be non-permanent student populations at Ithaca College (6,700 students) and Cornell University (22,400 students) (Ithaca at a glance) (Facts about Cornell). The additional college students are assumed to be in the highly connected, younger than 25 population.
+
+\item[Susceptibility Group Size]\hfill \\
+When an infected person comes into close contact with another person of the same group in a specific day, the infection rate of a disease is the percentage chance that the other person will get infected.
+
+As the disease spreads, more and more people in a person's circle might be infected or might have already recovered. Therefore, we developed a mechanistic concept called susceptible group size, which is the number of people in a social group that are still susceptible (alive, healthy, but not immune) to H1N1. This can be calculated by using the percentage of susceptible people in the population, multiplied by the original group size.
+
+$$\texttt{susceptible\_group\_size} = \texttt{group\_size} * \frac{\texttt{num\_healthy}}{\texttt{population}}$$
+
+Since we know how many people each infected person can affect, we can approximately calculate the entire susceptible population as:
+
+$$\texttt{susceptible\_population} =\texttt{num\_infected} * \texttt{susceptible\_group\_size}$$
+
+Then using the definition of infection rate, each day we do a simulation on each member of the susceptible population, with a probability infection\_rate of being infected.
+
+The susceptible group size depends on a person's connectivity. Students (high connectivity population) were parameterized to have a potential susceptible group size of 10 per day. The low connectivity populations were parameterized to have a potential susceptible group size of 2 per day. An analysis of the qualitative merit and sensitivity to changes in these parameter is discussed in the Validation section.
+
+\item[Latent Period]\hfill \\
+Latent period is the time during which a person is infectious (able to transmit the disease) but not yet infected (exhibiting symptoms and potentially experiencing death or recovery). The deterministic model implements a latent period of 1 day (CDC 2009). The stochastic models do not incorporate latent period.
+
+
+\item[Vaccination Effective Time]\hfill \\
+The vaccination effective time is the number of days until the vaccine takes effect. It is implemented in the first stochastic model. At the beginning of each month, all vaccines are used. If a vaccinated person remains healthy after day 14, then that person is automatically immunized (CDC, 2009). 
+\end{description}
+
+
+\section{The Models}
+We considered a deterministic model as well as two versions of a stochastic model.  
+
+\subsection{The deterministic model}
+
+The deterministic model is a version of the $\mathcal{S} \rightarrow \mathcal{E} \rightarrow \mathcal{I} \rightarrow \mathcal{R}$ model. Here, $\mathcal{S}$ is the susceptible population, $\mathcal{E}$ is the exposed population, $\mathcal{I}$ is the infectious population, and $\mathcal{R}$ is the population recovered with immunity.
+
+We include the differential equations of this model following one population ($L$, the ``normal'' population). The equations for the other populations ($C$ for ``highly connected'' and $H$ for ``high risk'') can be derived by simply swapping names. We begin with the equation determining the rate of new infections
+$$I_L = L_h\left(\beta_{LL}\frac{L_i}{L}
++ \beta_{LC}\frac{C_i}{C}
++ \beta_{LH}\frac{H_i}{H}\right)$$
+Where $I_L$ is the rate of new infections, $L_h$ is the healthy population, $L_i, C_i,$ and $H_i$ are the infectious from each population, $L, C,$ and $H$ are the total number in each population, and $\beta_{ij}$ is the contact rate between population $i$ and $j$. It follows that the number of healthy individuals drops with new infections
+$$\frac{dL_h}{dt} = -I_L$$
+
+The number of exposed individuals grows with new infections, decreases with transitions out of the latent stage, and decreases with deaths.
+$$\frac{dL_e}{dt} = I_L - (\epsilon_L + \mu_L)L_e$$
+Where $L_e$ is the exposed population, $\epsilon_L$ is the inverse of the latent period for group $L$, and $\mu_L$ is the death rate of group $L$. The infectious population grows with new transitions out of the latent period and decreases with deaths or recoveries.
+$$\frac{dL_i}{dt} = \epsilon_LL_e - (\gamma_L + \mu_L)L_i$$
+Where $\gamma_L$ is the inverse of the infectious period. The recovered population simply grows with the number who exit the infectious stage.
+
+$$\frac{dL_r}{dt} = \gamma_LL_i$$
+
+Where $L_r$ is the number recovered from/immune to the disease. Finally the dead population is simply the sum of those dead during the exposed and infectious stages.
+
+$$\frac{dL_d}{dt} = \mu_L(L_i + L_e)$$
+
+Where $L_d$ is the number of dead from group $L$. 
+
+\subsection{Stochastic Model}
+The following model is based on a discrete probabilistic approach. The difference between this modal and the deterministic model is the interpretation of connectivity and infection rate, death rate and recover rate, and it determines infection, death, and recovery probabilistically.
+
+\subsubsection{Connectivity}
+Consider every person to be living in a community with some size. A person with high connectivity like a student can be in close touch with up to 10 people per day. While a person with low connectivity like an elderly, can be in close touch with about 2. Therefore we have a constant named group-size, which is the average number of people that a person will have close contact with every day (with the possibility of infecting), its value differs from high-connectivity population to low-connectivity population.
+
+\subsubsection{Infection Rate \& Infection}
+When an infected person comes into close touch with another person in his group in a specific day, the infection rate of a disease is the percentage that the other person will get infected on a specific day.
+
+As the disease spreads, more and more people in a person's circle might be infected or have already recovered. Therefore we come up with a concept called susceptible-group-size, which is the number of people in your circle that is still susceptible (alive, healthy, but not immune), which can be calculated by using the percentage of susceptible people in its population, times the original group size.
+
+$$\texttt{susceptible\_group\_size} = \texttt{group\_size} * \frac{\texttt{num\_healthy}}{\texttt{population}}$$
+
+Since we know how many people each infected people can affect, we can approximately calculate the entire susceptible population as:
+
+$$\texttt{susceptible\_population} = \texttt{num\_infected} * \texttt{susceptible\_group\_size}$$
+
+Then using the definition of infection rate, each day we do a simulation on each member of the susceptible population, with a probability infection-rate of being infected, and calculate the number of newly infected people.
+
+\subsubsection{Death Rate \& Recovery Rate}
+Death rate is interpreted as the percentage that an infected person will die in a specific day, and recover rate is interpreted as the percentage that an infected person will recover in a specific day.
+
+Each day, we do a simulation on each member of the infected population, with a probability death-rate of dying, and a probability recover-rate of recovering.
+
+\subsubsection{Vaccination}
+We treat time discretely as 100 days, and we treat the population as three separate subgroups: a group of high-risk population, a group of high-connectivity population, and a group of normal population. Each group has their different death-rate, recover-rate, and group-size based on the characteristic of each group.
+
+We will test two vaccination strategies. The first one focuses on high-risk population, and the second one focuses on high-connectivity population.
+
+We make a simplified assumption that at the beginning of each month, all the available amount of vaccination will arrive, and will be injected immediately to the targeted population. However, the immunization takes two weeks to take effect.
+
+\section{Results Validation \& Robustness}
+\subsection{Results}
+\subsubsection{Stochastic Model}
+Now we compute the result using stochastic model. We ran 100 trials and calculate the average number of deaths for both strategies, also calculating scenario with no vaccination for comparison.
+\subparagraph{H1N1 Normal}
+
+In the normal H1N1 situation, the high-risk population is the population between age 22 and 65, while the population younger than 22 is the high-connectivity population:
+
+By conducting 100 runs for the two strategies, comparing them with the result with no vaccination, we can see a slight advantage by using the strategy focusing on high-connectivity population: resulting in an average of 13.32 death less than 15.58 death of using strategy focusing on high-priority population, and 15.71 death with no vaccination at all.
+
+\begin{center}
+\begin{tabular}{ | c | c | }
+\hline
+ & Death Rate\\\hline
+No vaccination & 15.7100\\\hline
+Risk-Priotity & 15.5800\\\hline
+Connectivity-Priority & 13.3200\\
+\hline
+\end{tabular}
+\end{center}
+
+If we use no vaccination at all, the speed of spreading is much slower in high-risk population (sometimes stops spreading as in the graph below, but sometimes it spreads out but at a much slower rate than the high-connectivity population), and the high-connectivity population (the students) takes the dominant role in spreading the disease:
+
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{111.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{112.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{113.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{114.png}
+       \end{subfigure}
+\end{figure}
+
+If the vaccination is focused on the high-risk population, then most of the vaccination will be wasted as in many cases, the disease actually doesn't spread fast in the high-risk population, while risking the lives of the high-connectivity population, where diseases spread to thousands in less than a week, by the time we have vaccination left for the highly connected population, all of them are either already infected or already recovered:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{121.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{122.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{123.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{124.png}
+       \end{subfigure}
+\end{figure}
+
+If vaccination is focused on the high risk connectivity population, then it will just be in time to stop the disease from spreading out, as we can see the jumps in immune people around day 14 and around 44, where the two rounds vaccination takes effect. While giving vaccination to high-risk population doesn't create much difference as the spread has either stopped or haven't caught enough momentum to spread fast, and there is still time to stop them:
+
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{131.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{132.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{133.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{134.png}
+       \end{subfigure}
+\end{figure}
+
+\subparagraph{H1N1 Variation}
+
+In the case of the new strain of H1N1, the result is still the same. We should still focus on the high-connectivity population. The high-risk population in this case is the population older than 22 (people older than 65 don't have the immunity to this new variation because it differs from the old H1N1, which the older generation have generated immunization for in an outbreak years earlier), while the population younger than 22 is the high-connectivity population:
+
+\begin{center}
+\begin{tabular}{ | c | c | }
+\hline
+ & Death Rate\\\hline
+No vaccination & 15.8400\\\hline
+Risk-Priotity & 15.3100\\\hline
+Connectivity-Priority & 14.0300\\
+\hline
+\end{tabular}
+\end{center}
+
+Since the older generation don't have immunization to the new variation, the size of high-risk population increases. However, because each infected member in the high-risk population can only spread to a limited number of people each day (determined by group size), the spread speed of the disease doesn't change much. This is why the change doesn't have much effect on the result, and we should still focus on the high-connectivity population to stop the spread early.
+
+Below is the graph plotted for disease spread with no vaccination:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{211.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{212.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{213.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{214.png}
+       \end{subfigure}
+\end{figure}
+
+Below is the graph plotted for disease spread with a high-risk population focused strategy:
+
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{221.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{222.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{223.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{224.png}
+       \end{subfigure}
+\end{figure}
+
+Below is the graph plotted for disease spread with a high-connectivity population focused strategy:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{231.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{232.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{233.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{234.png}
+       \end{subfigure}
+\end{figure}
+
+\subparagraph{H1N1 Twice as Deadly}
+
+In the case where the disease is twice as deadly as the original strain of H1N1, we can see the result show more clearly that the high-connectivity strategy is better. We can see that with no vaccination, the number of deaths doubled from the original strain of H1N1. The connectivity focused strategy results in an average of 26.680 deaths, much better than the strategy focusing on high-risk population, resulting in 29.80 deaths.
+
+\begin{center}
+\begin{tabular}{ | c | c | }
+\hline
+ & Death Rate\\\hline
+No vaccination & 30.7700\\\hline
+Risk-Priotity & 29.8000\\\hline
+Connectivity-Priority & 26.6800\\
+\hline
+\end{tabular}
+\end{center}
+
+This behavior is reasonable, as the death rate for the high-connected population doubled. Since they are more likely to die from the disease, and because it spreads much faster in the highly-connected population than in the high-risk population (the speed of spreading limits the number of infected people in the high-risk population), it is even more urgent than for the original H1N1 to vaccinate the high-connectivity population.
+
+Below is the graph plotted for disease spread with no vaccination:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{311.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{312.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{313.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{314.png}
+       \end{subfigure}
+\end{figure}
+
+Below is the graph plotted for disease spread with high-risk population focused strategy:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{321.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{322.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{323.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{324.png}
+       \end{subfigure}
+\end{figure}
+
+Below is the graph plotted for disease spread with high-connectivity population focused strategy:
+
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{331.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{332.png}
+       \end{subfigure}
+              \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{333.png}
+       \end{subfigure}\quad
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{334.png}
+       \end{subfigure}
+\end{figure}
+
+\subsection{Validation}
+\subsubsection{Zero Death Rate}
+If the death rate is zero, we would expect the infection to spread normally, but just have no death, which is exactly what we get:
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{zero_death.png}
+       \end{subfigure}\quad
+\end{figure}
+\subsubsection{Zero Recovery Rate}
+If the recovery rate is zero (no immunization or vaccination), we would expect the red line to be zero and the blue line to go up in two phases. It would increase first when it spread in the highly connected population, and then in the not highly connected population, which is exactly what we get, with 45750 infected, 565 death and 0 immune:
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{zero_recovery.png}
+       \end{subfigure}\quad
+\end{figure}
+\subsubsection{Zero Infection Rate}
+If the infection rate is zero, then there will be maximally 3 people infected, and eventually they will either die or recover. This is exactly what we get, with 0 infected, 0 death, and 3 immune:
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{zero_infection.png}
+       \end{subfigure}\quad
+\end{figure}
+\subsubsection{Large Group Size}
+If we set the group size for all populations to ten times their original size, we would expect the disease to spread much more quickly as an infected person has more contacts to spread disease to. This is exactly what we get: with the peak of infection much earlier:
+\begin{figure}[H]
+       \centering
+       \begin{subfigure}{0.48\textwidth}
+       \centering
+       \includegraphics[width=1.1\textwidth]{large_group.png}
+       \end{subfigure}\quad
+\end{figure}
+
+\subsection{Robustness}
+\subsubsection{Group Size}
+In our example, I set high-connectivity-group-size to 10 and low-connectivity-group-size to 2. If we double the value to be 20 and 4, the average number of deaths with no vaccination is 58, which is more than twice our original value of 15.7. This shows some degree of un-robustness in the stochastic model, as it can be hard to justify and find the correct value for high-connectivity-group-size and low-connectivity-group-size. However, the qualitative result is still the same, as the high-connectivity focused strategy results in an average of 35 deaths, which is much less than the 44 deaths of the high-risk focused strategy. Therefore, it is still a good model for qualitative analysis of which strategy is better and is relatively robust.
+
+\section{Strengths and weaknesses}
+\begin{description}
+\item[Strengths of the deterministic model]\hfill\\
+\begin{itemize}
+\item The deterministic model provides an elegant solution to the problem motivated by the ``susceptible - infected - recovered'' (S-I-R) epidemiological model. Similar models have been implemented to develop epidemiological guidance and predictions, and are proven to provide meaningful and accurate data for large-scale pandemic simulation (Yi and Muldowney, 1995).
+
+\item It is much less computationally expensive to optimize than the stochastic model, because each run produces the same invariant output.
+\end{itemize}
+ 
+
+\item[Weaknesses of the deterministic model]\hfill \\
+\begin{itemize}
+\item The output is very sensitive to the parameters, particularly to the values in the beta connectivity matrix. The results vastly differ depending on the values used for the infection rate of H1N1.
+
+\item Flu spread is physically probabilistic, so a deterministic model cannot represent the irregular dynamics of pandemic epidemiology on small scales.
+
+\item The entire population becomes infected for most reasonable sets of parameters.
+\end{itemize}
+
+ 
+
+\item[Strengths shared by the two stochastic models]\hfill \\
+\begin{itemize}
+\item The spread of flu is random and probabilistic for any given interaction on any given day. These models accurately incorporate this randomness.
+
+\item The stochastic model permits greater control in time of the dynamics of the flu spread. Atomic events, such as mass monthly vaccinations, are easily incorporated into the stochastic model.
+
+\item The stochastic model parameters are more easily adjusted and updated given new information, since they interact in less fundamental ways than in the deterministic model.
+\end{itemize}
+
+ 
+
+\item[Weaknesses shared by the stochastic models]\hfill \\
+\begin{itemize}
+
+\item Optimization is computationally expensive, since many simulation runs are required to establish a significant result.
+
+\end{itemize}
+
+The main difference between the two stochastic models is the mechanism for spreading flu through the population. The first model implements a social group size concept to spread the infection through the population. The second model uses a probabilistic function of flu parameters that allows the infection to behave in a reasonable way, but isn't mathematically supportable.
+
+ 
+
+\item[Strengths of first stochastic model]\hfill \\
+\begin{itemize}
+\item The new infection algorithm for the first core is mathematically motivated to represent social group dynamics.
+\end{itemize}
+
+ 
+
+\item[Weaknesses of first stochastic model]\hfill \\
+\begin{itemize}
+
+\item The parameters for the new infection algorithm are not directly verifiable through epidemiological literature. They are qualitatively selected to produce i) a reasonable rate of infection and ii) an expected number of deaths based on CDC data.
+
+\end{itemize}
+
+\item[Strengths of second stochastic model]\hfill \\
+
+\begin{itemize}
+\item The model uses only epidemiological parameters, which could lead to a more accurate recommendation.
+\end{itemize}
+
+ 
+
+\item[Weaknesses of second stochastic model]\hfill \\
+\begin{itemize}
+
+\item This model has a crucial weakness. The new infection algorithm is not dimensionally appropriate and it only models correct behavior for a given limited set of parameters.
+\end{itemize}
+
+The first stochastic model produces our strongest result because it has a mathematically robust infection rate and reasonable sensitivity to parameters. Since all three models produce the same result despite their idiosyncrasies, the three models can also be considered to produce a single strong result through various modeling conceptualizations.
+
+\end{description}
+
+\section{Conclusions}
+We studied the spread of pandemic H1N1 through Ithaca, NY with three different models for two different vaccination strategies. The vaccination strategies were either i) vaccinating high risk people or ii) vaccinating highly connected people. these two strategies were evaluated for there ability to minimize the total number of deaths using i) a mechanistic, stochastic model for the spread of H1N1, ii) a parameter-focused stochastic model and iii) a deterministic, epidemiologically-based model. The mechanistic model produced the most mathematically robust results, but all three models produced significant results. All three models showed that the optimal strategy to reduce the number of deaths in Ithaca, NY is to administer all vaccinations to the highly connected sub-population, not the high risk sub-population.
+
+In accordance with the consensus from our three models, we recommend that Ithaca focus its immunization efforts on the high connectivity members of the population, defined as people under the age of 25. By immunizing this population against the spread of flu, we claim that Ithaca will achieve the minimum possible number of deaths during an H1N1 pandemic.
+
+\section{Future work}
+Given more time, our greatest priority would be to combine the strongest elements of our two stochastic models into a single stochastic model. Each stochastic model has a significant advantage of either i.)  strong mathematical foundation or ii.) strong epidemiological parameterization. If we could develop a stochastic infection algorithm that is mathematically robust and uses only research-motivated parameters, this would combine our two models into a single, robust model.
+
+Other factors that we could incorporate to increase the realism of the model are i)higher resolution population age distribution, ii) higher resolution transmissibility rates for different subgroups (as explored in Paine et al, 2009), iii) probabilistic rates for the vaccine not producing immunity, and iv) probabilistic rates of the vaccine causing infection.
+
+\section{Bibliography}
+\begin{enumerate}
+\item Department of Health and Human Services, (2010). 2009 H1N1: Overview of the pandemic. Retrieved from Centers for Disease Control and Prevention website: http://www.cdc.gov/h1n1flu/yearinreview/yir5.htm
+
+\item Department of Health and Human Services, (2009). 2009 H1N1 Early Outbreak and Disease Characteristics. Retrieved from Centers for Disease Control and Prevention website: http://www.cdc.gov/h1n1flu/surveillanceqa.htm
+
+\item Department of Health and Human Services, (2010). Updated Interim Recommendations for the Use of Antiviral Medications in the Treatment and Prevention of Influenza for the 2009-2010 Season. Retrieved from the Centers for Disease Control and Prevention website: http://www.cdc.gov/h1n1flu/recommendations.htm
+
+\item Facts about Cornell. Retrieved from http://www.cornell.edu/about/facts/stats.cfm
+ 
+\item Ferguson, N. M., \& Cummings, D et al. (2006). Strategies for mitigating an influenza pandemic. Nature, 448-452. doi:10.1038
+
+\item Ithaca at a glance. Retrieved from http://www.ithaca.edu/admission/facts/
+
+\item Paine S, Mercer GN, et al. Transmissibility of 2009 pandemic influenza A(H1N1) in New Zealand: effective reproduction number and in fluence of age, ethnicity and importations. Euro Surveill. 2010;15(24):pii=19591. Available online: htm tp: www.eurosurveillance.org/ViewArticle.aspx?ArticleId=19591
+
+\item U.S. Department of Commerce, (2013). Ithaca (city), new york. Retrieved from United States Census Bureau website: http://quickfacts.census.gov/qfd/states/36/3638077.html
+\end{enumerate}
+
+\section{Appendix A: A letter to the city of Ithaca}
+
+To the concerned citizens of Ithaca,\\
+After much research and many simulations, our team has concluded that the optimal distribution of H1N1 vaccines gives all vaccines to highly connected members of the population.
+
+We have considered two scenarios. The first is an outbreak of H1N1, and the other an outbreak of a new strain of flu that is twice as deadly. In both cases it was determined that giving all vaccines to highly connected individuals decreased the total number of deaths when compared to solutions that split vaccines with high-risk individuals.
+
+We have found that vaccinating highly connected individuals such as school-aged children and college students significantly decreases the number of infections, which in turn decreases the number of likely deaths. On the other hand, vaccinating the high-risk population will grant protection to those more likely to die in case of infection, but with more highly connected individuals in the susceptible population, the overall infection reaches more people which in turn leads to more predicted deaths.
+
+Do note that while we have done our best to model the situation, we are bounded by certain limitations. We had to make generalizations about the population in order to get a working model. For example, we assume that all members of a certain age group behave the same way, and that Ithaca is a closed system with nobody (healthy or otherwise) entering or exiting. We also do not account for any disease prevention measures ranging from quarantines to simply staying home from work. Finally, we only consider the spread of disease during year at Cornell, not taking into account seasonal changes or major social events such as concerts.
+
+\section{Appendix B: Source code}
+The source code for each of these models has been included in this document.
+
+\end{document}
