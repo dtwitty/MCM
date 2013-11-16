@@ -11,7 +11,7 @@ def build_sim_map():
 
 class Map():
 	def __init__(self, graph):
-		self.graph = G
+		self.graph = graph
 	# get a list of nodes that satisfy the inlier function
 	def get_nodes(self, inlier_function):
 		out = []
