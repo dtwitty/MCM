@@ -1,8 +1,11 @@
 import mapbuilder
 import random
 import numpy as np
+from cab import Cab
+from Queue import Queue
 
 #fp = mapbuilder.download_osm(-76.534, 42.407316, -76.4304, 42.50056)
+city_map = mapbuilder.read_osm('ithaca.osm')
 
 zone_recs = [
 	(-76.4947, 42.4394, -76.4748, 42.45588),      #Cornell 0
@@ -51,7 +54,6 @@ freqs = day_freqs
 
 class RequestSimulator():
 	def __init__(self):
-		self.map = mapbuilder.read_osm('ithaca.osm')
 		self.zones = {}
 		self.requests = {}
 		for i in range(len(zone_recs)):
@@ -60,7 +62,7 @@ class RequestSimulator():
 
 	def filter_nodes_by_zone(self, left, bottom, right, top):
 		nodes = []
-		for key, value in self.map.node.iteritems():
+		for key, value in city_map.node.iteritems():
 			data = value['data']
 			if data.lat > bottom and data.lat < top and data.lon > left and data.lon < right:
 				nodes.append(data)
@@ -94,3 +96,59 @@ class RequestSimulator():
 			return self.requests[cur_time]
 		else:
 			return []
+
+class CabSimulator():
+	def __init__(self, number_cabs):
+		self.number_cabs = number_cabs
+		self.cabs = []
+		for i in range(self.number_cabs):
+			cab = Cab(city_map)
+			self.cabs.append()
+
+	def find_free_cabs:
+		res = []
+		for cab in self.cabs:
+			if cab.state == 0 or cab.state == 1:
+				res.append(cab)
+		return res
+
+	def find_closest_free_cab_for_request(self, cabs, request):
+		shortest_distance = 1000000000000
+		shortest_cab = None
+		shortest_index = -1
+		cust_loc = request[3]
+		for i, cab in range(len(self.cabs)):
+			cab = self.cabs[i]
+			dist = city_graph.distance(cab.cur_loc, cust_loc)
+			if dist < shortest_distance:
+				shortest_distance = dist
+				shortest_cab = cab
+				shortest_index = i
+		return cab, i
+
+
+	def call_this_every_minute(self, cur_time):
+		for cab in self.cabs:
+			res = cab.update(cur_time)
+			if res:
+				handled_requests.put(res)
+				waiting_times.append(cur_time - res[0])
+
+		free_cabs = self.find_free_cabs()
+		while pending_requests.qsize() > 0 and len(free_cabs) > 0:
+			request = pending_requests.get()
+			cab, i = self.find_closest_free_cab_for_request(free_cabs)
+			cab.handle_request(request, cur_time)
+			del free_cabs[i]
+
+
+waiting_times = []
+handled_requests = Queue()
+pending_requests = Queue()
+request_sim = RequestSimulator()
+cab_sim = CabSimulator(1)
+for i in range(60):
+	requests = request_sim.call_this_every_minute(i)
+	for request in requests:
+		pending_requests.put(request)
+	cab_sim.call_this_every_minute(i)
