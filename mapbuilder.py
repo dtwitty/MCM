@@ -14,9 +14,11 @@ import networkx
  
 def download_osm(left,bottom,right,top):
     """ Return a filehandle to the downloaded data."""
-    from urllib.request import urlopen
-    fp = urlopen( "http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f"%(left,bottom,right,top) )
-    return fp
+    from urllib2 import urlopen
+    fp = urlopen( "http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f"%(left,bottom,right,top))
+    localFile = open('ithaca.osm', 'w')
+    localFile.write(fp.read())
+    localFile.close()
  
 def read_osm(filename_or_stream, only_roads=True):
     """Read graph in OSM format from file specified by name or by stream object.
@@ -46,15 +48,14 @@ def read_osm(filename_or_stream, only_roads=True):
         n = osm.nodes[n_id]
         G.node[n_id] = dict(data=n)
     return G
-        
-    
+
 class Node:
     def __init__(self, id, lon, lat):
         self.id = id
         self.lon = lon
         self.lat = lat
         self.tags = {}
-        
+
 class Way:
     def __init__(self, id, osm):
         self.osm = osm
