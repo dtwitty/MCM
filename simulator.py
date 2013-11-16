@@ -123,12 +123,16 @@ class CabSimulator():
 				res.append(cab)
 		return res
 
+	# Heuristic: use the Euclidean distance to substitute Dijstra distance
+	def dist(self, loc1, loc2):
+		return (loc1['lat'] - loc2['lat']) ** 2 + (loc1['long'] - loc2['long']) ** 2
+
 	def find_closest_free_cab_for_request(self, free_cabs, request):
 		shortest_distance = 10**10
 		shortest_cab = None
 		cust_loc = request[3]
 		for cab in free_cabs:
-			dist = city_map.get_distance(cab.cur_loc['id'], cust_loc['id'])
+			dist = self.dist(cab.cur_loc, cust_loc)
 			if dist < shortest_distance:
 				shortest_distance = dist
 				shortest_cab = cab
@@ -158,7 +162,7 @@ handled_requests = Queue()
 pending_requests = Queue()
 request_sim = RequestSimulator()
 airport = request_sim.zones[9][0]
-cab_sim = CabSimulator(20, airport)
+cab_sim = CabSimulator(9, airport)
 has_started = False
 
 # def print_state():
@@ -174,9 +178,10 @@ has_started = False
 # 			print "timestamp: %d" % cab.index_timestamp
 # 			print cab.request
 
-for i in range(60 * 24):
-	if i % 10 == 0 and len(waiting_times) > 0:
+for i in range(60 * 100):
+	if i % 60 == 0 and len(waiting_times) > 0:
 		print float(sum(waiting_times)) / len(waiting_times)
+		print float(len(filter(lambda x: x>25, waiting_times))) / len(waiting_times)
 	requests = request_sim.call_this_every_minute(i)
 	if requests:
 		has_started = True
