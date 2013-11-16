@@ -16,7 +16,8 @@ zone_recs = [
 	(-76.49315, 42.48106, -76.48766, 42.48635),      #Mall 10
 ]
 
-# Only takes into account the traffic to and from Ithaca Mall
+# Only takes into account the traffic to and from Ithaca Mall, Walmart, and Airport
+# Will add touris attraction & downtown later
 # Weekdays, number of requests to zones per hour
 day_freqs = {
 	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 8, 3],
@@ -31,7 +32,6 @@ day_freqs = {
 	9: [8, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
-
 night_freqs = {
 	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3],
 	1: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
