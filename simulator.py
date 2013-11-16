@@ -1,4 +1,6 @@
 import mapbuilder
+import random
+import numpy as np
 
 #fp = mapbuilder.download_osm(-76.534, 42.407316, -76.4304, 42.50056)
 
@@ -45,9 +47,10 @@ night_freqs = {
 	9: [0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
+freqs = day_freqs
 
 class Simulator():
-	def __init__(self, num_cabs, initfunction):
+	def __init__(self):
 		self.map = mapbuilder.read_osm('ithaca.osm')
 		self.zones = {}
 		for i in range(len(zone_recs)):
@@ -62,4 +65,18 @@ class Simulator():
 				nodes.append(data)
 		return nodes
 
-
+	# Use poisson distribution to simulate the requests in every hour
+	def every_hour_call_this_function(self, cur_time):
+		requests = []
+		for i in range(len(self.zones)):
+			for j in range(len(self.zones)):
+				if freqs[i][j] > 0:
+					freq = np.random.poisson(freqs[i][j])
+					request_minutes = random.sample(range(60), freq)
+					for request_minute in request_minutes:
+						request_time = cur_time + request_minute
+						src = random.choice(self.zones[i])
+						dest = random.choice(self.zones[j])
+						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node)
+						requests.append((request_time, i, j, src, dest))
+		return requests

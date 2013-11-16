@@ -46,9 +46,6 @@ class MapNode():
 			raise ValueError("Cab visited wrong node!")
 		self.time_since_visit = 0
 
-
-
-
 class Map():
 	def __init__(self):
 		pass
