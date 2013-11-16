@@ -53,6 +53,7 @@ class Simulator():
 	def __init__(self):
 		self.map = mapbuilder.read_osm('ithaca.osm')
 		self.zones = {}
+		self.requests = {}
 		for i in range(len(zone_recs)):
 			nodes = self.filter_nodes_by_zone(*(zone_recs[i]))
 			self.zones[i] = nodes
@@ -66,8 +67,9 @@ class Simulator():
 		return nodes
 
 	# Use poisson distribution to simulate the requests in every hour
-	def every_hour_call_this_function(self, cur_time):
-		requests = []
+	def generate_request(self, cur_time):
+		# clear the buffer
+		self.requests = {}
 		for i in range(len(self.zones)):
 			for j in range(len(self.zones)):
 				if freqs[i][j] > 0:
@@ -78,5 +80,17 @@ class Simulator():
 						src = random.choice(self.zones[i])
 						dest = random.choice(self.zones[j])
 						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node)
-						requests.append((request_time, i, j, src, dest))
-		return requests
+						request = (request_time, i, j, src, dest)
+						if request_time in self.requests:
+							self.requests[request_time].append(request)
+						else:
+							self.requests[request_time] = [request]
+
+	# Only exposed endpoint: call this every minute to get a list of requests
+	def call_this_every_minute(self, cur_time):
+		if cur_time % 60 == 0:
+			self.generate_request(cur_time)
+		if cur_time in self.requests:
+			return self.requests[cur_time]
+		else:
+			return []
