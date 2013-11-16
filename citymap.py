@@ -1,54 +1,34 @@
 # map with with support for running plug-in simulations
 
 from queue import Queue
+import networkx as nx
+from mapbuilder import build_ithaca
 
-class Request():
-	def __init__(self, dest, simulator):
-		self.dest = dest
-		self.waiting_time = 0
-
-	def update(self):
-		self.waiting_time += 1
-
-	def service(self, cab):
-		self.simulator.finish_request(self.waiting_time)
-		self.cab.set_destination(self.dest)
-
-# locations on the map
-class MapNode():
-	def __init__(self):
-		# probability that a new request will occur each timestep
-		self.request_chance = 0
-		# time since an available cab has visited this location
-		self.time_since_visit = 0
-		# pending requests
-		self.pending_requests = Queue()
-
-	def add_request(self, request):
-		self.pending_requests.append(request)
-
-	def service_request(self, cab):
-		if len(self.pending_requests) == 0:
-			raise KeyError("No requests to handle!")
-		if cab.node != self:
-			raise ValueError("Cab tried to pick up at wrong node!")
-		# fifo ordering
-		req = self.pending_requests.popleft()
-		req.service(cab)
-
-	def update(self):
-		for r in self.pending_requests:
-			r.update()
-		self.time_since_visit += 1
-
-	def visit(self, cab):
-		if cab.node != self:
-			raise ValueError("Cab visited wrong node!")
-		self.time_since_visit = 0
+def build_sim_map():
+	G = build_ithaca('ithaca.osm')
+	m = Map(G)
+	return m
 
 class Map():
-	def __init__(self):
-		pass
-
+	def __init__(self, graph):
+		self.graph = G
 	# get a list of nodes that satisfy the inlier function
-	def get_nodes(self, inlier_function)
+	def get_nodes(self, inlier_function):
+		out = []
+		for node in self.graph.nodes_iter():
+			if inlier_function(node):
+				out.append(node)
+		return out
+
+	def get_shortest_path(self, a, b):
+		path_from_graph = nx.shortest_path(self.graph, source=a, target=b, weight='distance')
+		out_path = []
+		for i in range(1, len(path_from_graph)):
+			u = path_from_graph[i - 1]
+			v = path_from_graph[i]
+			distance = self.graph.edge[u][v]['distance']
+			out_path.append((self.graph.node[v], distance))
+		return out_path
+
+	def get_distance(self, a, b):
+		return nx.shortest_path_length(self.graph, source=a, target=b, weight='distance')
