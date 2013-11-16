@@ -1,6 +1,5 @@
 # map with with support for running plug-in simulations
 
-from queue import Queue
 import networkx as nx
 from mapbuilder import build_ithaca
 
@@ -11,7 +10,7 @@ def build_sim_map():
 
 class Map():
 	def __init__(self, graph):
-		self.graph = G
+		self.graph = graph
 	# get a list of nodes that satisfy the inlier function
 	def get_nodes(self, inlier_function):
 		out = []

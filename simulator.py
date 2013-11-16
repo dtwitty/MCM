@@ -1,11 +1,10 @@
-import mapbuilder
+import citymap
 import random
 import numpy as np
 from cab import Cab
 from Queue import Queue
 
-#fp = mapbuilder.download_osm(-76.534, 42.407316, -76.4304, 42.50056)
-city_map = mapbuilder.read_osm('ithaca.osm')
+city_map = citymap.build_sim_map()
 
 zone_recs = [
 	(-76.4947, 42.4394, -76.4748, 42.45588),      #Cornell 0
@@ -50,6 +49,19 @@ night_freqs = {
 	9: [0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
+test_freqs = {
+	0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6],
+	1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	5: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	6: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	7: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	8: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	9: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	10:[6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+}
 freqs = day_freqs
 
 class RequestSimulator():
@@ -62,9 +74,8 @@ class RequestSimulator():
 
 	def filter_nodes_by_zone(self, left, bottom, right, top):
 		nodes = []
-		for key, value in city_map.node.iteritems():
-			data = value['data']
-			if data.lat > bottom and data.lat < top and data.lon > left and data.lon < right:
+		for key, data in city_map.graph.node.iteritems():
+			if data['lat'] > bottom and data['lat'] < top and data['long'] > left and data['long'] < right:
 				nodes.append(data)
 		return nodes
 
@@ -98,57 +109,87 @@ class RequestSimulator():
 			return []
 
 class CabSimulator():
-	def __init__(self, number_cabs):
+	def __init__(self, number_cabs, init_loc):
 		self.number_cabs = number_cabs
 		self.cabs = []
 		for i in range(self.number_cabs):
-			cab = Cab(city_map)
-			self.cabs.append()
+			cab = Cab(city_map, init_loc)
+			self.cabs.append(cab)
 
-	def find_free_cabs:
+	def find_free_cabs(self):
 		res = []
 		for cab in self.cabs:
 			if cab.state == 0 or cab.state == 1:
 				res.append(cab)
 		return res
 
-	def find_closest_free_cab_for_request(self, cabs, request):
-		shortest_distance = 1000000000000
+	def find_closest_free_cab_for_request(self, free_cabs, request):
+		shortest_distance = 10**10
 		shortest_cab = None
-		shortest_index = -1
 		cust_loc = request[3]
-		for i, cab in range(len(self.cabs)):
-			cab = self.cabs[i]
-			dist = city_graph.distance(cab.cur_loc, cust_loc)
+		for cab in free_cabs:
+			dist = city_map.get_distance(cab.cur_loc['id'], cust_loc['id'])
 			if dist < shortest_distance:
 				shortest_distance = dist
 				shortest_cab = cab
-				shortest_index = i
-		return cab, i
+		return cab
 
 
 	def call_this_every_minute(self, cur_time):
 		for cab in self.cabs:
 			res = cab.update(cur_time)
 			if res:
+				# print "Handled Request:"
+				# print res
 				handled_requests.put(res)
 				waiting_times.append(cur_time - res[0])
 
 		free_cabs = self.find_free_cabs()
 		while pending_requests.qsize() > 0 and len(free_cabs) > 0:
 			request = pending_requests.get()
-			cab, i = self.find_closest_free_cab_for_request(free_cabs)
+			cab = self.find_closest_free_cab_for_request(free_cabs, request)
 			cab.handle_request(request, cur_time)
-			del free_cabs[i]
-
+			# print "New Appointed Hanlde:"
+			# print request
+			free_cabs.remove(cab)
 
 waiting_times = []
 handled_requests = Queue()
 pending_requests = Queue()
 request_sim = RequestSimulator()
-cab_sim = CabSimulator(1)
-for i in range(60):
+airport = request_sim.zones[9][0]
+cab_sim = CabSimulator(20, airport)
+has_started = False
+
+# def print_state():
+# 	for i in range(len(cab_sim.cabs)):
+# 		cab = cab_sim.cabs[i]
+# 		if has_started:
+# 			print "====Cab %d:" % i
+# 			print "state: %d" % cab.state
+# 			print "index: %d" % cab.index
+# 			print "pickup index: %d" % cab.pick_up_index
+# 			if cab.path:
+# 				print "dropoff index: %d" % len(cab.path)
+# 			print "timestamp: %d" % cab.index_timestamp
+# 			print cab.request
+
+for i in range(60 * 24):
+	if i % 10 == 0 and len(waiting_times) > 0:
+		print float(sum(waiting_times)) / len(waiting_times)
 	requests = request_sim.call_this_every_minute(i)
+	if requests:
+		has_started = True
+		# print "New pending requests:"
+		# print requests
 	for request in requests:
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
+	# print_state()
+
+
+
+
+
+
+
