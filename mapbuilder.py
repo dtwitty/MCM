@@ -11,7 +11,22 @@ http://github.com/bmander/graphserver/tree/master and is copyright (c)
 import xml.sax
 import copy
 import networkx
+import math
  
+def distance_on_unit_sphere(lat1, long1, lat2, long2):
+    degrees_to_radians = math.pi/180.0
+    phi1 = (90.0 - lat1)*degrees_to_radians
+    phi2 = (90.0 - lat2)*degrees_to_radians
+    theta1 = long1*degrees_to_radians
+    theta2 = long2*degrees_to_radians
+    cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) + 
+           math.cos(phi1)*math.cos(phi2))
+    arc = math.acos( cos )
+    return arc
+
+def distance_in_miles(lat1, long1, lat2, long2):
+    return 3960 * distance_on_unit_sphere(lat1, long1, lat2, long2)
+
 def download_osm(left,bottom,right,top):
     """ Return a filehandle to the downloaded data."""
     from urllib2 import urlopen
@@ -19,36 +34,31 @@ def download_osm(left,bottom,right,top):
     localFile = open('ithaca.osm', 'w')
     localFile.write(fp.read())
     localFile.close()
+
  
 def read_osm(filename_or_stream, only_roads=True):
-    """Read graph in OSM format from file specified by name or by stream object.
- 
-    Parameters
-    ----------
-    filename_or_stream : filename or stream object
- 
-    Returns
-    -------
-    G : Graph
- 
-    Examples
-    --------
-    >>> G=nx.read_osm(nx.download_osm(-122.33,47.60,-122.31,47.61))
-    >>> plot([G.node[n]['data'].lat for n in G], [G.node[n]['data'].lon for n in G], ',')
- 
-    """
     osm = OSM(filename_or_stream)
     G = networkx.Graph()
  
     for w in osm.ways.values():
         if only_roads and 'highway' not in w.tags:
             continue
-        G.add_path(w.nds, id=w.id, data=w)
-    for n_id in G.nodes_iter():
-        n = osm.nodes[n_id]
-        G.node[n_id] = dict(data=n)
+        for n in w.nds:
+            if n not in G.node:
+                G.add_node(n)
+                oN = osm.nodes[n]
+                data = {'id':oN.id, 'lat':oN.lat, 'long':oN.lon, 'tags':oN.tags}
+                G.node[n] = data
+        for i in range(len(w.nds) - 1):
+            a,b = w.nds[i], w.nds[i + 1]
+            aN = G.node[a]
+            bN = G.node[b]
+            # get the distance between them
+            lat1, long1 = aN['lat'], aN['long']
+            lat2, long2 = bN['lat'], bN['long']
+            distance = distance_in_miles(lat1, long1, lat2, long2)
+            G.add_edge(a,b, {'distance':distance})
     return G
-
 class Node:
     def __init__(self, id, lon, lat):
         self.id = id
@@ -91,8 +101,6 @@ class Way:
             
         return ret
         
-        
- 
 class OSM:
     def __init__(self, filename_or_stream):
         """ File can be either a filename or stream/file object."""
@@ -157,3 +165,10 @@ class OSM:
             for split_way in split_ways:
                 new_ways[split_way.id] = split_way
         self.ways = new_ways
+
+def build_ithaca(filename):
+    # build the graph from the filename
+    f = open(filename)
+    G = read_osm(f)
+    f.close()
+    return G
