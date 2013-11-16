@@ -49,7 +49,7 @@ night_freqs = {
 }
 freqs = day_freqs
 
-class Simulator():
+class RequestSimulator():
 	def __init__(self):
 		self.map = mapbuilder.read_osm('ithaca.osm')
 		self.zones = {}
