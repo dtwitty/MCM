@@ -196,7 +196,7 @@ class ThreeSimulator():
 			# print request
 			free_cabs0.remove(cab)
 
-		free_cabs1 = self.find_free_cabs(0)
+		free_cabs1 = self.find_free_cabs(1)
 		while pending_requests1.qsize() > 0 and len(free_cabs1) > 0:
 			request = pending_requests1.get()
 			cab = self.find_closest_free_cab_for_request(free_cabs1, request)
@@ -205,7 +205,7 @@ class ThreeSimulator():
 			# print request
 			free_cabs1.remove(cab)
 
-		free_cabs2 = self.find_free_cabs(0)
+		free_cabs2 = self.find_free_cabs(2)
 		while pending_requests2.qsize() > 0 and len(free_cabs2) > 0:
 			request = pending_requests2.get()
 			cab = self.find_closest_free_cab_for_request(free_cabs2, request)
