@@ -29,7 +29,8 @@ zone_recs = [
 
 map_height =  int((42.4905 - 42.4196) / 0.001) + 1
 map_width = int((76.5261 - 76.4748) / 0.001) + 1
-# print map_width, map_height
+print map_width, map_height
+
 def convert_coordinate(loc):
 	x = int((loc['long'] + 76.5261) / 0.001)
 	y = int((42.4905 - loc['lat']) / 0.001)
@@ -38,16 +39,21 @@ def convert_coordinate(loc):
 def output_matrix(seq):
 	mat = [[0 for i in range(map_width)] for j in range(map_height)]
 	for req in seq:
-		x, y = convert_coordinate(req[4])
+		x, y = convert_coordinate(req[3])
 		if x < map_width and y < map_height:
 			mat[y][x] = mat[y][x] + 1
 
-	f = open('dest.csv', 'w')
+	f = open('src.csv', 'w')
 	for row in mat:
 		f.write(",".join(map(lambda x: str(x), row)))
 		f.write("\n")
 	f.close()
 
+def output_waiting_time(seq):
+	f = open('waiting_time.csv', 'w')
+	f.write(",".join(map(lambda x: str(x), seq)))
+	f.write("\n")
+	f.close()
 
 # Only takes into account the traffic to and from Ithaca Mall, Walmart, and Airport
 # Will add touris attraction & downtown later
@@ -116,6 +122,8 @@ test_freqs = {
 	10:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
+homo = False
+
 class RequestSimulator():
 	def __init__(self):
 		self.zones = {}
@@ -135,9 +143,17 @@ class RequestSimulator():
 	def generate_request(self, cur_time):
 		# clear the buffer
 		self.requests = {}
+		hour = cur_time / 60
+		print "Non-homo:"
+		print (1.3 - ((1.3 - 0.5) / 36.0) * (hour - 6) ** 2)
+		print "============================"
 		for i in range(len(self.zones)):
 			for j in range(len(self.zones)):
-				freq = np.random.poisson(freqs[i][j])
+				if homo:
+					freq = np.random.poisson(freqs[i][j])
+				else:
+					adjusted_freq = (1.3 - ((1.3 - 0.5) / 36.0) * (hour - 6) ** 2) * freqs[i][j]
+					freq = np.random.poisson(adjusted_freq)
 				if freq > 0:
 					request_minutes = random.sample(range(60), freq)
 					for request_minute in request_minutes:
@@ -164,8 +180,8 @@ class CabSimulator():
 	def __init__(self, cab_zones):
 		self.cabs = []
 		for zone in cab_zones:
-			cab = Cab(city_map, request_sim.zones[9][0])
-			#cab = Cab(city_map, request_sim.zones[zone][0])
+			#cab = Cab(city_map, request_sim.zones[9][0])
+			cab = Cab(city_map, request_sim.zones[zone][0])
 			self.cabs.append(cab)
 			# unlicensed with probability 1/7
 			# prob = randint(0,6)
@@ -206,6 +222,7 @@ class CabSimulator():
 				old_revenue = old_revenue + zone_fees[zone_i][zone_j]
 				new_revenue = new_revenue + (2.5 + price_per_mile * distance)
 				waiting_time = waiting_time + (cur_time - res[0])
+				waiting_times.append(cur_time - res[0])
 				if (cur_time - res[0]) > 25:
 					num_err = num_err + 1
 
@@ -242,6 +259,7 @@ print cab_zones
 old_revenue = 0
 new_revenue = 0
 waiting_time = 0
+waiting_times = []
 num_err = 0
 num_handled = 0
 pending_requests = Queue()
@@ -250,7 +268,7 @@ cab_sim = CabSimulator(cab_zones)
 
 # has_started = False
 #request_for_print = []
-for i in range(60 * 24 * 10):
+for i in range(60 * 12):
 	if i % 60 == 0 and num_handled > 0:
 		print(float(waiting_time) / num_handled)
 		print(float(num_err) / num_handled)
@@ -276,3 +294,4 @@ for i in range(60 * 24 * 10):
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
 #output_matrix(request_for_print)
+output_waiting_time(waiting_times)
