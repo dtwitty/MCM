@@ -40,18 +40,23 @@ zone_fees = {
 }
 
 day_freqs = {
-	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 8, 3],
-	1: [0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 1],
-	2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	0: [0, 0, 0.5, 0.5, 3, 0, 0, 0, 3, 8, 3],
+	1: [0, 0, 0.5, 0.5, 1, 0, 0, 0, 1, 3, 1],
+	2: [0.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	3: [0.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	4: [3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	5: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	6: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	7: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	8: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	8: [3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	9: [8, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
+
+for i in range(11):
+	for j in range(11):
+		day_freqs[i][j] = day_freqs[i][j] + (1.0 / 6)
+
 night_freqs = {
 	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3],
 	1: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
@@ -65,8 +70,9 @@ night_freqs = {
 	9: [0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
+
 test_freqs = {
-	0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6],
+	0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
 	1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -76,7 +82,7 @@ test_freqs = {
 	7: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	8: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	9: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	10:[6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	10:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 freqs = day_freqs
 
@@ -101,8 +107,8 @@ class RequestSimulator():
 		self.requests = {}
 		for i in range(len(self.zones)):
 			for j in range(len(self.zones)):
-				if freqs[i][j] > 0:
-					freq = np.random.poisson(freqs[i][j])
+				freq = np.random.poisson(freqs[i][j])
+				if freq > 0:
 					request_minutes = random.sample(range(60), freq)
 					for request_minute in request_minutes:
 						request_time = cur_time + request_minute
@@ -135,7 +141,7 @@ class CabSimulator():
 	def find_free_cabs(self):
 		res = []
 		for cab in self.cabs:
-			if cab.state == 0 or cab.state == 1:
+			if cab.state == 0 or cab.state == 1 or cab.state == 4:
 				res.append(cab)
 		return res
 
@@ -175,8 +181,6 @@ class CabSimulator():
 			request = pending_requests.get()
 			cab = self.find_closest_free_cab_for_request(free_cabs, request)
 			cab.handle_request(request, cur_time)
-			# print "New Appointed Hanlde:"
-			# print request
 			free_cabs.remove(cab)
 
 old_revenue = 0
@@ -186,8 +190,15 @@ num_err = 0
 num_handled = 0
 pending_requests = Queue()
 request_sim = RequestSimulator()
-airport = request_sim.zones[9][0] # All taxis starts at airport
-cab_sim = CabSimulator(10, airport)
+
+cornell = request_sim.zones[0][0]
+airport = request_sim.zones[9][0]
+mall = request_sim.zones[10][0]
+
+cab_sim = CabSimulator(14, airport)
+
+# has_started = False
+
 for i in range(60 * 24):
 	if i % 60 == 0 and num_handled > 0:
 		print float(waiting_time) / num_handled
@@ -196,8 +207,16 @@ for i in range(60 * 24):
 		print float(new_revenue) / num_handled		
 		print "==========================================="
 	requests = request_sim.call_this_every_minute(i)
-	if requests:
-		has_started = True
+	# if requests:
+	# 	has_started = True
+	# if has_started:
+	# 	for cab in cab_sim.cabs:
+	# 		print "Cab:"
+	# 		print cab.state
+	# 		print cab.cur_loc
+	# 		print cab.request
+	# 		if cab.path:
+	# 			print cab.index, cab.pick_up_index, cab.drop_off_index, len(cab.path)
 	for request in requests:
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
