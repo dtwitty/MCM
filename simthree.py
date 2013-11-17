@@ -149,8 +149,6 @@ class ThreeSimulator():
 			self.cab_companies[2].append(cab)
 		print len(self.cab_companies[0]), len(self.cab_companies[1]), len(self.cab_companies[2])
 
-
-
 	def find_free_cabs(self, company):
 		res = []
 		for cab in self.cab_companies[company]:
