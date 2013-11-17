@@ -17,11 +17,26 @@
 \begin{abstract}
 \end{abstract}
 
+\noindent\textbf{Disclaimer:} for legal and moral reasons, all geographical locations and company names used in this paper are entirely fictional unless otherwise stated. However, for the sake of accuracy, real world data was used to tune our model.
+
 \section{The Problem}
+Mythical is a college town in upstate New York. Some of the attractions of Mythical include scenic gorges, a downtown area with shops and theaters, a large university, a smaller liberal arts college, a mall, and a regional airport. Mythical is divided structurally into the City of Mythical and the surrounding Town of Mythical. 
+
+Most of the residential population of Mythical uses cars for transportation, though low-income and temporary residents, like college students, are dependent on public transportation via buses and taxis. Taxis are most frequently taken to and from the airport or bus station.
+
+... finish problem ...
 
 \section{Model assumptions}
 
 \section{Paramaterizing Greater Mythical}
+In search of good data for the base of our model, we scoured an extensive list of college towns and found that Ithaca, New York fit the fictional town of Mythical extremely well. Thus, we model taxi distribution on Ithaca to approximate modeling on Mythical.
+
+\subsection{Collecting Street Information}
+We used OpenStreetMaps data for Ithaca and the surrounding area as a base for our model. We downloaded street data using the OSM api, and used a github python script to convert it to our internal representation. 
+
+The area we sampled goes from tompkins Airport to the North, Ithaca College to the South, Westhaven Road to the west, and the Turkey Hill Road to the East.
+
+The graph we created contains over 18,000 nodes and over 19,000 edges. Nodes are geographic locations defined by latitude and longitude, and represent arbitrary road features (intersections, road corners, etc). Edges represent drivable road between nodes. 
 
 \section{The Models}
 
