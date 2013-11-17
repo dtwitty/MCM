@@ -21,6 +21,33 @@ zone_recs = [
 	(-76.49315, 42.48106, -76.48766, 42.48635),      #Mall 10
 ]
 
+# -76.5261
+# 42.4196
+# -76.4613 / 76.4748
+# 42.4905
+
+map_height =  int((42.4905 - 42.4196) / 0.001) + 1
+map_width = int((76.5261 - 76.4748) / 0.001) + 1
+print map_width, map_height
+def convert_coordinate(loc):
+	x = int((loc['long'] + 76.5261) / 0.001)
+	y = int((42.4905 - loc['lat']) / 0.001)
+	return x, y
+
+def output_matrix(seq):
+	mat = [[0 for i in range(map_width)] for j in range(map_height)]
+	for req in seq:
+		x, y = convert_coordinate(req[4])
+		if x < map_width and y < map_height:
+			mat[y][x] = mat[y][x] + 1
+
+	f = open('dest.csv', 'w')
+	for row in mat:
+		f.write(",".join(map(lambda x: str(x), row)))
+		f.write("\n")
+	f.close()
+
+
 # Only takes into account the traffic to and from Ithaca Mall, Walmart, and Airport
 # Will add touris attraction & downtown later
 # Weekdays, number of requests to zones per hour
@@ -57,7 +84,6 @@ day_freqs = {
 for i in range(11):
 	for j in range(11):
 		day_freqs[i][j] = day_freqs[i][j] + (1.0 / 6)
-
 
 night_freqs = {
 	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3],
@@ -117,7 +143,7 @@ class RequestSimulator():
 						request_time = cur_time + request_minute
 						src = random.choice(self.zones[i])
 						dest = random.choice(self.zones[j])
-						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node)
+						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node, paid_distance)
 						request = [request_time, i, j, src, dest, 0]
 						if request_time in self.requests:
 							self.requests[request_time].append(request)
@@ -137,8 +163,12 @@ class CabSimulator():
 	def __init__(self, cab_zones):
 		self.cabs = []
 		for zone in cab_zones:
-			cab = Cab(city_map, request_sim.zones[zone][0])
+			cab = Cab(city_map, request_sim.zones[9][0])
+			#cab = Cab(city_map, request_sim.zones[zone][0])
 			self.cabs.append(cab)
+			# unlicensed with probability 1/7
+			# prob = randint(0,6)
+			# cab.licensed = (prob == 0)
 
 	def find_free_cabs(self):
 		res = []
@@ -195,7 +225,7 @@ for i in range(len(zone_freq)):
 	sorted_freq.append((zone_freq[i], i))
 sorted_freq.sort(reverse=True)
 
-num_cabs = 12
+num_cabs = 14
 cab_zones = []
 cnt = 0
 for f, i in sorted_freq:
@@ -216,14 +246,18 @@ request_sim = RequestSimulator()
 cab_sim = CabSimulator(cab_zones)
 
 # has_started = False
-for i in range(60 * 24):
+#request_for_print = []
+for i in range(60 * 24 * 10):
 	if i % 60 == 0 and num_handled > 0:
 		print(float(waiting_time) / num_handled)
 		print(float(num_err) / num_handled)
 		print(float(old_revenue) / num_handled)
 		print(float(new_revenue) / num_handled)
+		print pending_requests.qsize()
+		print len(request_sim.requests)
 		print("===========================================")
 	requests = request_sim.call_this_every_minute(i)
+	#request_for_print = request_for_print + requests
 	# if requests:
 	# 	has_started = True
 	# if has_started:
@@ -234,6 +268,8 @@ for i in range(60 * 24):
 	# 		print cab.request
 	# 		if cab.path:
 	# 			print cab.index, cab.pick_up_index, cab.drop_off_index, len(cab.path)
+
 	for request in requests:
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
+#output_matrix(request_for_print)
