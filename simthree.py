@@ -4,7 +4,6 @@ import random
 import numpy as np
 from cab import Cab
 from Queue import Queue
-from random import randint
 
 city_map = citymap.build_sim_map()
 
@@ -117,7 +116,7 @@ class RequestSimulator():
 						src = random.choice(self.zones[i])
 						dest = random.choice(self.zones[j])
 						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node, paid_distance, companies)
-						request = [request_time, i, j, src, dest, 0, randint(0, 2)]
+						request = [request_time, i, j, src, dest, 0, random.random()]
 						if request_time in self.requests:
 							self.requests[request_time].append(request)
 						else:
@@ -135,8 +134,8 @@ class RequestSimulator():
 class ThreeSimulator():
 	def __init__(self, number_cabs, init_loc):
 		self.cab_companies = [[], [], []]
-		num0 = number_cabs / 3
-		num1 = number_cabs / 3
+		num0 = 5 #number_cabs / 2
+		num1 = 5 #number_cabs / 4
 		num2 = number_cabs - num0 - num1
 		for i in range(num0):
 			cab = Cab(city_map, init_loc)
@@ -256,9 +255,9 @@ for i in range(60 * 12):
 	# 		if cab.path:
 	# 			print cab.index, cab.pick_up_index, cab.drop_off_index, len(cab.path)
 	for request in requests:
-		if request[6] == 0:
+		if request[6] < (1.0/3):
 			pending_requests0.put(request)
-		elif request[6] == 1:
+		elif request[6] < (2.0/3):
 			pending_requests1.put(request)
 		else:
 			pending_requests2.put(request)
