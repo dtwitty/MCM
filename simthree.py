@@ -235,7 +235,7 @@ print "Number of Cabs: %d" % num_cabs
 cab_sim = ThreeSimulator(num_cabs, airport)
 
 # has_started = False
-for i in range(60 * 24 * 10):
+for i in range(60 * 12):
 	if i % 60 == 0 and num_handled > 0:
 		print(float(waiting_time) / num_handled)
 		print(float(num_err) / num_handled)

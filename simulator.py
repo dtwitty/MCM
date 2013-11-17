@@ -223,7 +223,7 @@ class CabSimulator():
 				old_revenue = old_revenue + zone_fees[zone_i][zone_j]
 				new_revenue = new_revenue + (2.5 + price_per_mile * distance)
 				waiting_time = waiting_time + (cur_time - res[0])
-				waiting_times.append(cur_time - res[0])
+				# waiting_times.append(cur_time - res[0])
 				if (cur_time - res[0]) > 25:
 					num_err = num_err + 1
 
@@ -260,7 +260,7 @@ print cab_zones
 old_revenue = 0
 new_revenue = 0
 waiting_time = 0
-waiting_times = []
+# waiting_times = []
 num_err = 0
 num_handled = 0
 pending_requests = Queue()
@@ -295,4 +295,4 @@ for i in range(60 * 12):
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
 #output_matrix(request_for_print)
-output_waiting_time(waiting_times)
+# output_waiting_time(waiting_times)
