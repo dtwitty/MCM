@@ -59,7 +59,8 @@ def output_waiting_time(seq):
 # Will add touris attraction & downtown later
 # Weekdays, number of requests to zones per hour
 
-price_per_mile = 2.39
+price_per_mile = float(sys.argv[2]) if len(sys.argv) > 2 else 2.15
+
 zone_fees = {
 	0: [4.6, 5.1, 5.1, 5.1, 5.6, 5.1, 5.1, 5.1, 5.6, 14, 11],
 	1: [5.1, 4.6, 5.1, 5.1, 5.6, 5.1, 5.1, 5.1, 5.6, 14, 11],
@@ -122,7 +123,7 @@ test_freqs = {
 	10:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
-homo = False
+homo = True
 
 class RequestSimulator():
 	def __init__(self):
@@ -144,9 +145,9 @@ class RequestSimulator():
 		# clear the buffer
 		self.requests = {}
 		hour = cur_time / 60
-		print "Non-homo:"
-		print (1.3 - ((1.3 - 0.5) / 36.0) * (hour - 6) ** 2)
-		print "============================"
+		# print "Non-homo:"
+		# print (1.3 - ((1.3 - 0.5) / 36.0) * (hour - 6) ** 2)
+		# print "============================"
 		for i in range(len(self.zones)):
 			for j in range(len(self.zones)):
 				if homo:
