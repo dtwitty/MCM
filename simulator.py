@@ -164,7 +164,7 @@ class CabSimulator():
 	def __init__(self, cab_zones):
 		self.cabs = []
 		for zone in cab_zones:
-			cab = Cab(city_map, request_sim.zones[9][0])
+			cab = Cab(city_map, request_sim.zones[zone][0])
 			#cab = Cab(city_map, request_sim.zones[zone][0])
 			self.cabs.append(cab)
 			# unlicensed with probability 1/7
