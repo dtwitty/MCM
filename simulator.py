@@ -71,6 +71,8 @@ night_freqs = {
 	10:[0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
+
+
 test_freqs = {
 	0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
 	1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -84,7 +86,6 @@ test_freqs = {
 	9: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	10:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
-freqs = day_freqs
 
 class RequestSimulator():
 	def __init__(self):
@@ -131,11 +132,10 @@ class RequestSimulator():
 			return []
 
 class CabSimulator():
-	def __init__(self, number_cabs, init_loc):
-		self.number_cabs = number_cabs
+	def __init__(self, cab_zones):
 		self.cabs = []
-		for i in range(self.number_cabs):
-			cab = Cab(city_map, init_loc)
+		for zone in cab_zones:
+			cab = Cab(city_map, request_sim.zones[zone][0])
 			self.cabs.append(cab)
 
 	def find_free_cabs(self):
@@ -183,6 +183,27 @@ class CabSimulator():
 			cab.handle_request(request, cur_time)
 			free_cabs.remove(cab)
 
+freqs = day_freqs
+freq_sums = map(lambda x: float(sum(x)), freqs.values())
+freq_sum = sum(freq_sums)
+zone_freq = map(lambda x: x/freq_sum, freq_sums)
+
+sorted_freq = []
+for i in range(len(zone_freq)):
+	sorted_freq.append((zone_freq[i], i))
+sorted_freq.sort(reverse=True)
+
+num_cabs = 12
+cab_zones = []
+cnt = 0
+for f, i in sorted_freq:
+	amt = int(f * num_cabs) + 1
+	if amt + cnt <= num_cabs:
+		for j in range(amt):
+			cab_zones.append(i)
+		cnt += amt
+print cab_zones
+
 old_revenue = 0
 new_revenue = 0
 waiting_time = 0
@@ -190,12 +211,7 @@ num_err = 0
 num_handled = 0
 pending_requests = Queue()
 request_sim = RequestSimulator()
-
-cornell = request_sim.zones[0][0]
-airport = request_sim.zones[9][0]
-mall = request_sim.zones[10][0]
-
-cab_sim = CabSimulator(14, airport)
+cab_sim = CabSimulator(cab_zones)
 
 # has_started = False
 
@@ -220,10 +236,4 @@ for i in range(60 * 24):
 	for request in requests:
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
-
-
-
-
-
-
 
