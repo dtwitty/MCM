@@ -1,3 +1,4 @@
+import sys
 import citymap
 import random
 import numpy as np
@@ -115,8 +116,8 @@ class RequestSimulator():
 						request_time = cur_time + request_minute
 						src = random.choice(self.zones[i])
 						dest = random.choice(self.zones[j])
-						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node)
-						request = [request_time, i, j, src, dest, 0]
+						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node, paid_distance, companies)
+						request = [request_time, i, j, src, dest, 0, randint(0, 2)]
 						if request_time in self.requests:
 							self.requests[request_time].append(request)
 						else:
@@ -133,38 +134,38 @@ class RequestSimulator():
 
 class ThreeSimulator():
 	def __init__(self, number_cabs, init_loc):
-		self.number_cabs = number_cabs
 		self.cab_companies = [[], [], []]
-		for i in range(self.number_cabs):
-			# create a cab
+		num0 = number_cabs / 3
+		num1 = number_cabs / 3
+		num2 = number_cabs - num0 - num1
+		for i in range(num0):
 			cab = Cab(city_map, init_loc)
-			# assign it to a random company
-			prob = randint(0, 2)
-			self.cab_companies[prob].append(cab)
-			# unlicensed with probability 2/3
-			prob = randint(0,2)
-			cab.licensed = (prob < 3)
+			self.cab_companies[0].append(cab)
+		for i in range(num1):
+			cab = Cab(city_map, init_loc)
+			self.cab_companies[1].append(cab)
+		for i in range(num2):
+			cab = Cab(city_map, init_loc)
+			self.cab_companies[2].append(cab)
+		print len(self.cab_companies[0]), len(self.cab_companies[1]), len(self.cab_companies[2])
 
-			
-
-	def find_free_cabs(self):
-		# choose a cab company at random
-		prob = randint(0,2)
+	def find_free_cabs(self, company):
 		res = []
-		for cab in self.cab_companies[prob]:
+		for cab in self.cab_companies[company]:
 			if cab.state == 0 or cab.state == 1 or cab.state == 4:
 				res.append(cab)
 		return res
+
+	# Heuristic: use the Euclidean distance to substitute Dijstra distance
+	def dist(self, loc1, loc2):
+		return (loc1['lat'] - loc2['lat']) ** 2 + (loc1['long'] - loc2['long']) ** 2
 
 	def find_closest_free_cab_for_request(self, free_cabs, request):
 		shortest_distance = 10**10
 		shortest_cab = None
 		cust_loc = request[3]
-		dist_func = lambda l1,l2: ((l1[0] - l2[0])**2 + (l1[1] - l2[1])**2)**0.5
 		for cab in free_cabs:
-			(lat1, long1) = cab.cur_loc['lat'], cab.cur_loc['long']
-			(lat2, long2) = cust_loc['lat'], cust_loc['long']
-			dist = dist_func((lat1,long1),(lat2,long2))
+			dist = self.dist(cab.cur_loc, cust_loc)
 			if dist < shortest_distance:
 				shortest_distance = dist
 				shortest_cab = cab
@@ -185,36 +186,63 @@ class ThreeSimulator():
 					waiting_time = waiting_time + (cur_time - res[0])
 					if (cur_time - res[0]) > 25:
 						num_err = num_err + 1
-		free_cabs = self.find_free_cabs()
-		while pending_requests.qsize() > 0 and len(free_cabs) > 0:
-			request = pending_requests.get()
-			cab = self.find_closest_free_cab_for_request(free_cabs, request)
+
+		free_cabs0 = self.find_free_cabs(0)
+		while pending_requests0.qsize() > 0 and len(free_cabs0) > 0:
+			request = pending_requests0.get()
+			cab = self.find_closest_free_cab_for_request(free_cabs0, request)
 			cab.handle_request(request, cur_time)
 			# print "New Appointed Hanlde:"
 			# print request
-			free_cabs.remove(cab)
+			free_cabs0.remove(cab)
+
+		free_cabs1 = self.find_free_cabs(0)
+		while pending_requests1.qsize() > 0 and len(free_cabs1) > 0:
+			request = pending_requests1.get()
+			cab = self.find_closest_free_cab_for_request(free_cabs1, request)
+			cab.handle_request(request, cur_time)
+			# print "New Appointed Hanlde:"
+			# print request
+			free_cabs1.remove(cab)
+
+		free_cabs2 = self.find_free_cabs(0)
+		while pending_requests2.qsize() > 0 and len(free_cabs2) > 0:
+			request = pending_requests2.get()
+			cab = self.find_closest_free_cab_for_request(free_cabs2, request)
+			cab.handle_request(request, cur_time)
+			# print "New Appointed Hanlde:"
+			# print request
+			free_cabs2.remove(cab)
 
 old_revenue = 0
 new_revenue = 0
 waiting_time = 0
 num_err = 0
 num_handled = 0
-pending_requests = Queue()
+pending_requests0 = Queue()
+pending_requests1 = Queue()
+pending_requests2 = Queue()
 request_sim = RequestSimulator()
 
-cornell = request_sim.zones[0][0]
 airport = request_sim.zones[9][0]
 mall = request_sim.zones[10][0]
+cornell = request_sim.zones[0][0]
 
-cab_sim = ThreeSimulator(16, airport)
+num_cabs = int(sys.argv[1]) if len(sys.argv) > 1 else 42
+print "Number of Cabs: %d" % num_cabs
+
+# Central Dispatch Center
+cab_sim = ThreeSimulator(num_cabs, airport)
 
 # has_started = False
-for i in range(60 * 24):
+for i in range(60 * 24 * 10):
 	if i % 60 == 0 and num_handled > 0:
 		print(float(waiting_time) / num_handled)
 		print(float(num_err) / num_handled)
 		print(float(old_revenue) / num_handled)
 		print(float(new_revenue) / num_handled)
+		print pending_requests0.qsize(), pending_requests1.qsize(), pending_requests2.qsize()
+		print len(request_sim.requests)
 		print("===========================================")
 	requests = request_sim.call_this_every_minute(i)
 	# if requests:
@@ -228,5 +256,11 @@ for i in range(60 * 24):
 	# 		if cab.path:
 	# 			print cab.index, cab.pick_up_index, cab.drop_off_index, len(cab.path)
 	for request in requests:
-		pending_requests.put(request)
+		if request[6] == 0:
+			pending_requests0.put(request)
+		elif request[6] == 1:
+			pending_requests1.put(request)
+		else:
+			pending_requests2.put(request)
 	cab_sim.call_this_every_minute(i)
+
