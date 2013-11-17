@@ -2,6 +2,7 @@
 
 import networkx as nx
 from mapbuilder import build_ithaca
+from random import choice, randint
 
 def build_sim_map():
 	G = build_ithaca('ithaca.osm')
@@ -28,6 +29,24 @@ class Map():
 			distance = self.graph.edge[u][v]['distance']
 			out_path.append((self.graph.node[v], distance))
 		return out_path
+
+	def get_bad_dest(self, b):
+		# pick a random node near b
+		count = 0
+		ret = None
+		for edge in nx.dfs_edges(self.graph, b):
+			if count == 1000:
+				break
+			node = edge[1]
+			count += 1
+			if count == 1:
+				ret = node
+			i = randint(0, count - 1)
+			if i == count - 1:
+				ret = node
+		return node
+
+
 
 	def get_distance(self, a, b):
 		return nx.shortest_path_length(self.graph, source=a, target=b, weight='distance')
