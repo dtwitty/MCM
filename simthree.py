@@ -143,7 +143,7 @@ class ThreeSimulator():
 			self.cab_companies[prob].append(cab)
 			# unlicensed with probability 2/3
 			prob = randint(0,2)
-			cab.licensed = (prob < 2)
+			cab.licensed = (prob < 3)
 
 			
 
@@ -206,7 +206,7 @@ cornell = request_sim.zones[0][0]
 airport = request_sim.zones[9][0]
 mall = request_sim.zones[10][0]
 
-cab_sim = ThreeSimulator(14, airport)
+cab_sim = ThreeSimulator(16, airport)
 
 # has_started = False
 for i in range(60 * 24):
