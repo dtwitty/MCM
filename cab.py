@@ -29,6 +29,7 @@ class Cab():
 		self.drop_off_index = -1 # the index where the customer wants to be
 		self.path = None # the path the cab is going in
 		self.paid_distance = -1
+		self.licensed = True
 
 	def update(self, cur_time):
 		# If the cab is in state 0 or state 1, do nothing
@@ -95,15 +96,24 @@ class Cab():
 		if self.state == 0 or self.state == 1 or self.state == 4:
 			cust_loc = request[3]
 			dest_loc = request[4]
-			first_leg = self.city_map.get_shortest_path(self.cur_loc['id'], cust_loc['id'])
+
+			if self.licensed:
+				zeroth_leg = []
+				first_leg = self.city_map.get_shortest_path(self.cur_loc['id'], cust_loc['id'])
+			else:
+				rand_node = self.city_map.get_bad_dest(cust_loc['id'])
+				zeroth_leg = self.city_map.get_shortest_path(self.cur_loc['id'], rand_node)
+				first_leg = self.city_map.get_shortest_path(rand_node, cust_loc['id'])
+
 			second_leg = self.city_map.get_shortest_path(cust_loc['id'], dest_loc['id'])
 			third_leg = self.city_map.get_shortest_path(dest_loc['id'], self.start_loc['id'])
 			self.paid_distance = sum(map(lambda x: x[1], second_leg))
 			request[5] = self.paid_distance
 			self.state = 2
 			self.index_timestamp = cur_time
-			self.pick_up_index = len(first_leg) - 1
-			self.drop_off_index = len(first_leg) + len(second_leg) - 1
-			self.path = first_leg + second_leg + third_leg
+			self.pick_up_index = len(zeroth_leg) + len(first_leg) - 1
+
+			self.drop_off_index = len(zeroth_leg) + len(first_leg) + len(second_leg) - 1
+			self.path = zeroth_leg + first_leg + second_leg + third_leg
 			self.index = 0
 			self.request = request
