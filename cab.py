@@ -21,6 +21,7 @@ class Cab():
 		self.index = -1 # the next index in the path
 		self.pick_up_index = -1 # the index where the customer is
 		self.path = None # the path the cab is going in
+		self.paid_distance = -1
 
 	def update(self, cur_time):
 		# If the cab is in state 0 or state 1, do nothing
@@ -71,6 +72,8 @@ class Cab():
 			dest_loc = request[4]
 			first_leg = self.city_map.get_shortest_path(self.cur_loc['id'], cust_loc['id'])
 			second_leg = self.city_map.get_shortest_path(cust_loc['id'], dest_loc['id'])
+			self.paid_distance = sum(map(lambda x: x[1], second_leg))
+			request[5] = self.paid_distance
 			self.state = 2
 			self.index_timestamp = cur_time
 			self.pick_up_index = len(first_leg) - 1

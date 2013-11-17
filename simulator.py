@@ -23,6 +23,22 @@ zone_recs = [
 # Only takes into account the traffic to and from Ithaca Mall, Walmart, and Airport
 # Will add touris attraction & downtown later
 # Weekdays, number of requests to zones per hour
+
+price_per_mile = 2.39
+zone_fees = {
+	0: [4.6, 5.1, 5.1, 5.1, 5.6, 5.1, 5.1, 5.1, 5.6, 14, 11],
+	1: [5.1, 4.6, 5.1, 5.1, 5.6, 5.1, 5.1, 5.1, 5.6, 14, 11],
+	2: [5.1, 5.1, 4.6, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 14, 11],
+	3: [5.1, 5.1, 5.1, 4.6, 5.1, 5.1, 5.1, 5.1, 5.1, 14, 11],
+	4: [5.6, 5.6, 5.1, 5.1, 4.6, 5.1, 5.1, 5.6, 5.1, 14, 11],
+	5: [5.1, 5.1, 5.1, 5.1, 5.1, 4.6, 5.1, 5.1, 5.1, 14, 11],
+	6: [5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 4.6, 5.1, 5.1, 14, 11],
+	7: [5.1, 5.1, 5.1, 5.1, 5.6, 5.1, 5.1, 4.6, 5.6, 14, 11],
+	8: [5.6, 5.6, 5.1, 5.1, 5.1, 5.1, 5.1, 5.6, 4.6, 14, 11],
+	9: [14, 14, 14, 14, 14, 14, 14, 14, 14, 4.6, 14],
+	10:[11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 4.6],
+}
+
 day_freqs = {
 	0: [0, 0, 0, 0, 3, 0, 0, 0, 0, 8, 3],
 	1: [0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 1],
@@ -93,7 +109,7 @@ class RequestSimulator():
 						src = random.choice(self.zones[i])
 						dest = random.choice(self.zones[j])
 						# The request is formatted as: (request_time, src_zone, dest_zone, src_node, dest_node)
-						request = (request_time, i, j, src, dest)
+						request = [request_time, i, j, src, dest, 0]
 						if request_time in self.requests:
 							self.requests[request_time].append(request)
 						else:
@@ -146,8 +162,12 @@ class CabSimulator():
 				# print "Handled Request:"
 				# print res
 				handled_requests.put(res)
+				zone_i = res[1]
+				zone_j = res[2]
+				distance = res[5]
+				original_prices.append(zone_fees[zone_i][zone_j])
+				new_prices.append(2.5 + price_per_mile * distance)
 				waiting_times.append(cur_time - res[0])
-
 		free_cabs = self.find_free_cabs()
 		while pending_requests.qsize() > 0 and len(free_cabs) > 0:
 			request = pending_requests.get()
@@ -157,40 +177,28 @@ class CabSimulator():
 			# print request
 			free_cabs.remove(cab)
 
+original_prices = []
+new_prices = []
 waiting_times = []
 handled_requests = Queue()
 pending_requests = Queue()
 request_sim = RequestSimulator()
-airport = request_sim.zones[9][0]
-cab_sim = CabSimulator(9, airport)
-has_started = False
+airport = request_sim.zones[9][0] # All taxis starts at airport
+cab_sim = CabSimulator(10, airport)
 
-# def print_state():
-# 	for i in range(len(cab_sim.cabs)):
-# 		cab = cab_sim.cabs[i]
-# 		if has_started:
-# 			print "====Cab %d:" % i
-# 			print "state: %d" % cab.state
-# 			print "index: %d" % cab.index
-# 			print "pickup index: %d" % cab.pick_up_index
-# 			if cab.path:
-# 				print "dropoff index: %d" % len(cab.path)
-# 			print "timestamp: %d" % cab.index_timestamp
-# 			print cab.request
-
-for i in range(60 * 100):
+for i in range(60 * 24):
 	if i % 60 == 0 and len(waiting_times) > 0:
 		print float(sum(waiting_times)) / len(waiting_times)
 		print float(len(filter(lambda x: x>25, waiting_times))) / len(waiting_times)
+		print sum(original_prices) / len(original_prices)
+		print sum(new_prices) / len(new_prices)
+		print "==========================================="
 	requests = request_sim.call_this_every_minute(i)
 	if requests:
 		has_started = True
-		# print "New pending requests:"
-		# print requests
 	for request in requests:
 		pending_requests.put(request)
 	cab_sim.call_this_every_minute(i)
-	# print_state()
 
 
 
