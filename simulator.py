@@ -159,15 +159,17 @@ class CabSimulator():
 		for cab in self.cabs:
 			res = cab.update(cur_time)
 			if res:
-				# print "Handled Request:"
-				# print res
-				handled_requests.put(res)
+				global old_revenue, new_revenue, waiting_time, num_err, num_handled
 				zone_i = res[1]
 				zone_j = res[2]
 				distance = res[5]
-				original_prices.append(zone_fees[zone_i][zone_j])
-				new_prices.append(2.5 + price_per_mile * distance)
-				waiting_times.append(cur_time - res[0])
+				num_handled = num_handled + 1
+				old_revenue = old_revenue + zone_fees[zone_i][zone_j]
+				new_revenue = new_revenue + (2.5 + price_per_mile * distance)
+				waiting_time = waiting_time + (cur_time - res[0])
+				if (cur_time - res[0]) > 25:
+					num_err = num_err + 1
+
 		free_cabs = self.find_free_cabs()
 		while pending_requests.qsize() > 0 and len(free_cabs) > 0:
 			request = pending_requests.get()
@@ -177,21 +179,21 @@ class CabSimulator():
 			# print request
 			free_cabs.remove(cab)
 
-original_prices = []
-new_prices = []
-waiting_times = []
-handled_requests = Queue()
+old_revenue = 0
+new_revenue = 0
+waiting_time = 0
+num_err = 0
+num_handled = 0
 pending_requests = Queue()
 request_sim = RequestSimulator()
 airport = request_sim.zones[9][0] # All taxis starts at airport
 cab_sim = CabSimulator(10, airport)
-
 for i in range(60 * 24):
-	if i % 60 == 0 and len(waiting_times) > 0:
-		print float(sum(waiting_times)) / len(waiting_times)
-		print float(len(filter(lambda x: x>25, waiting_times))) / len(waiting_times)
-		print sum(original_prices) / len(original_prices)
-		print sum(new_prices) / len(new_prices)
+	if i % 60 == 0 and num_handled > 0:
+		print float(waiting_time) / num_handled
+		print float(num_err) / num_handled
+		print float(old_revenue) / num_handled
+		print float(new_revenue) / num_handled		
 		print "==========================================="
 	requests = request_sim.call_this_every_minute(i)
 	if requests:
