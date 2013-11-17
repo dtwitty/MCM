@@ -1,3 +1,4 @@
+import sys
 import citymap
 import random
 import numpy as np
@@ -28,7 +29,7 @@ zone_recs = [
 
 map_height =  int((42.4905 - 42.4196) / 0.001) + 1
 map_width = int((76.5261 - 76.4748) / 0.001) + 1
-print map_width, map_height
+# print map_width, map_height
 def convert_coordinate(loc):
 	x = int((loc['long'] + 76.5261) / 0.001)
 	y = int((42.4905 - loc['lat']) / 0.001)
@@ -225,7 +226,9 @@ for i in range(len(zone_freq)):
 	sorted_freq.append((zone_freq[i], i))
 sorted_freq.sort(reverse=True)
 
-num_cabs = 14
+num_cabs = int(sys.argv[1]) if len(sys.argv) > 1 else 14
+print "Number of Cabs: %d" % num_cabs
+
 cab_zones = []
 cnt = 0
 for f, i in sorted_freq:

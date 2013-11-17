@@ -1,3 +1,4 @@
+import sys
 import citymap
 import random
 import numpy as np
@@ -229,8 +230,11 @@ airport = request_sim.zones[9][0]
 mall = request_sim.zones[10][0]
 cornell = request_sim.zones[0][0]
 
+num_cabs = int(sys.argv[1]) if len(sys.argv) > 1 else 42
+print "Number of Cabs: %d" % num_cabs
+
 # Central Dispatch Center
-cab_sim = ThreeSimulator(41, airport)
+cab_sim = ThreeSimulator(num_cabs, airport)
 
 # has_started = False
 for i in range(60 * 24 * 10):
