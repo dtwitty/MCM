@@ -123,7 +123,7 @@ test_freqs = {
 	10:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
-homo = True
+homo = False
 
 class RequestSimulator():
 	def __init__(self):
